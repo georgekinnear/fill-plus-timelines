@@ -2,7 +2,7 @@
 
 This repository provides a [simple R markdown script](fill-plus-timelines.Rmd) that reads in FILL+ data, and produces visual timelines like the following:
 
-![FILL+ timelines](/figs-web/fill-plus-timeline-comparison-1.png)
+![FILL+ timelines](https://github.com/georgekinnear/fill-plus-timelines/raw/main/figs-web/fill-plus-timeline-comparison-1.png)
 
 You can see the full output of the script here:
 
