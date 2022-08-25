@@ -6,11 +6,26 @@ George Kinnear
 This script shows an example of loading spreadsheets that contain FILL+
 coding data, then plotting the corresponding timelines.
 
-# Read data
+# Data input
 
-Naming of the files
+## File names
 
-Content of the files
+This script looks in the `data` folder for for `.csv` files that have a
+particular naming convention:
+
+    [:alnum:]]+_L[[:digit:]]+-[[:digit:]_]+-[[:alnum:]]+\\.csv
+
+In simpler terms, there are three parts to the name, separated from each
+other by `-`:
+
+1.  An identifier for the course and lecturer combination,
+    e.g. `ILA_L1`. (These are in the form of a string of letters for the
+    course, followed by an underscore, followed by `L` and a number
+    identifying the lecturer).
+
+2.  The lecture date in `yyyy_mm_dd` form.
+
+3.  The name (or other identifier) of the coder who entered the data.
 
 ``` r
 file_path = "data/"
@@ -18,7 +33,65 @@ csv_file_names = list.files(
   path = file_path,
   pattern = "[[:alnum:]]+_L[[:digit:]]+-[[:digit:]_]+-[[:alnum:]]+\\.csv"
 )
+```
 
+## File contents
+
+The contents of each `.csv` file should be FILL+ data, where the columns
+are:
+
+-   `time` = a timestamp in `hh:mm:ss` format
+-   `code` = one of the two-letter FILL+ codes
+
+The rows of data indicate the times when a new FILL+ code begins.
+
+These are the FILL+ codes, along with the colours assigned to them in
+the plots:
+
+``` r
+fillplus_names <- c(
+  # non-interactive
+  "AD" = "Admin",
+  "LT" = "Lecturer Talk",
+  
+  # vicarious interactive
+  "LQ" = "Lecturer Question",
+  "LR" = "Lecturer Response",
+  "SQ" = "Student Question",
+  "SR" = "Student Response",
+  
+  # interactive
+  "CQ" = "Class Question",
+  "ST" = "Student Thinking",
+  "SD" = "Student Discussion",
+  "FB" = "Feedback"
+)
+fillplus <- c(
+  # non-interactive
+  "AD" = "grey",
+  "LT" = "peachpuff",
+  "NA" = "white",
+  
+  # vicarious interactive
+  "LQ" = "seagreen3", # mid green
+  "LR" = "palegreen1", # pale green
+  "SQ" = "mediumpurple1", # pale purple
+  "SR" = "skyblue1", # pale blue
+  
+  # interactive
+  "CQ" = "seagreen4", # dark green
+  "ST" = "royalblue3", # mid blue / teal
+  "SD" = "#54278f", # dark purple
+  "FB" = "#fd8d3c" # orange
+)
+```
+
+## Reading the data
+
+The following code reads in all the data, and processes it ready for
+plotting.
+
+``` r
 raw_codes = csv_file_names %>%
   purrr::map(function(file_name){ # iterate through each file name
     df = fread(
@@ -86,6 +159,17 @@ full_table$code <- ifelse(full_table$code == "END", NA, full_table$code)
 
 # trim uncoded times
 full_table <- full_table %>% filter(!is.na(code)) 
+```
+
+The FILL+ codes are grouped into three levels of interactivity:
+
+``` r
+interactivity_levels <- c(
+  "NON" = "peachpuff",
+  "INT" = "springgreen4",
+  "VIC" = "cornflowerblue",
+  "NA" = "white"
+)
 
 codes_with_interactivity = full_table %>%  
   mutate(
@@ -98,52 +182,6 @@ codes_with_interactivity = full_table %>%
     )))
 ```
 
-``` r
-fillplus <- c(
-  # non-interactive
-  "AD" = "grey",
-  "LT" = "peachpuff",
-  "NA" = "white",
-  
-  # vicarious interactive
-  "LQ" = "seagreen3", # mid green
-  "LR" = "palegreen1", # pale green
-  "SQ" = "mediumpurple1", # pale purple
-  "SR" = "skyblue1", # pale blue
-  
-  # interactive
-  "CQ" = "seagreen4", # dark green
-  "ST" = "royalblue3", # mid blue / teal
-  "SD" = "#54278f", # dark purple
-  "FB" = "#fd8d3c" # orange
-)
-
-fillplus_names <- c(
-  # non-interactive
-  "AD" = "Admin",
-  "LT" = "Lecturer Talk",
-  
-  # vicarious interactive
-  "LQ" = "Lecturer Question",
-  "LR" = "Lecturer Response",
-  "SQ" = "Student Question",
-  "SR" = "Student Response",
-  
-  # interactive
-  "CQ" = "Class Question",
-  "ST" = "Student Thinking",
-  "SD" = "Student Discussion",
-  "FB" = "Feedback"
-)
-
-interactivity_levels <- c(
-  "NON" = "peachpuff",
-  "INT" = "springgreen4",
-  "VIC" = "cornflowerblue",
-  "NA" = "white"
-)
-```
-
 # Plotting timelines
 
 ## Full FILL+ detail
@@ -151,8 +189,6 @@ interactivity_levels <- c(
 ``` r
 allcodes = c("AD","LT","LQ","LR","SQ","SR","CQ","ST","SD","FB")
 intcodes = c("NON","VIC","INT")
-
-# timeline of all lectures using FILL+ codes
 
 full_table %>%
   filter(course_lecturer != "Vicarious Example") %>% 
@@ -183,7 +219,7 @@ full_table %>%
         )
 ```
 
-![](figs-web/unnamed-chunk-4-1.png)<!-- -->
+![](figs-web/fill-plus-timelines-1.png)<!-- -->
 
 ``` r
 ggsave("FIG_timelines.pdf", width = 16, height = 16, units = "cm")
@@ -222,7 +258,7 @@ codes_with_interactivity %>%
         )
 ```
 
-![](figs-web/unnamed-chunk-5-1.png)<!-- -->
+![](figs-web/fill-plus-interactivity-1.png)<!-- -->
 
 ``` r
 ggsave("FIG_interactivity.pdf", width = 15, units = "cm")
@@ -287,7 +323,7 @@ library(patchwork)
 full_timeline_C / interactivity_timeline_C
 ```
 
-![](figs-web/unnamed-chunk-6-1.png)<!-- -->
+![](figs-web/fill-plus-timeline-comparison-1.png)<!-- -->
 
 ``` r
 ggsave("FIG_interactivity-comparison.pdf", width = 15, units = "cm")
@@ -296,6 +332,10 @@ ggsave("FIG_interactivity-comparison.pdf", width = 15, units = "cm")
     ## Saving 15 x 12.7 cm image
 
 # Duration of LT
+
+There are many other ways to analyse FILL+ data beyond just the
+timelines. Here is an example showing the duration of each period of LT,
+together with the mean duration per course:
 
 ``` r
 codes_with_durations <- all_codings %>%
@@ -337,7 +377,7 @@ codes_with_durations %>%
        y = "Duration of LT (min)")
 ```
 
-![](figs-web/unnamed-chunk-7-1.png)<!-- -->
+![](figs-web/LT-duration-1.png)<!-- -->
 
 ``` r
 ggsave("FIG_LT_distribution.pdf", width=20, height = 10, units="cm")
