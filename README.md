@@ -1,12 +1,12 @@
 # FILL+ timelines
 
-This repository provides a [simple R markdown script](fill-plus-timeslines.Rmd) that reads in FILL+ data, and produces visual timelines like the following:
+This repository provides a [simple R markdown script](fill-plus-timelines.Rmd) that reads in FILL+ data, and produces visual timelines like the following:
 
 ![FILL+ timelines](/figs-web/unnamed-chunk-6-1.png)
 
 You can see the full output of the script here:
 
-> [fill-plus-timeslines.md](fill-plus-timeslines.md)
+> [fill-plus-timeslines.md](fill-plus-timelines.md)
 
 ## Generating FILL+ data
 
